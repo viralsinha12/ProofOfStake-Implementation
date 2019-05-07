@@ -65,6 +65,7 @@ class ValueOut:
 import random
 import datetime
 import hashlib
+
 global x
 x = 0
 
@@ -205,57 +206,7 @@ class POSSystem(basic.LineReceiver):
                                 temp = it + 1
                                 c.message("Transaction "+str(temp)+" validated and added to unresolved transactions pool")
                             else:
-                                c.message("Double Spending detected in transaction : "+str(it+1)+" with transaction  : "+str(duplicateTransaction))
-
-
-
-
-
-            # c.message(str(transactionObj1.valueIn.previousTransactionId))
-            # c.message(str(transactionObj1.valueIn.voutIndex))
-            # c.message(str(transactionObj2.valueIn.previousTransactionId))
-            # c.message(str(transactionObj2.valueIn.voutIndex))
-            # c.message(str(transactionObj3.valueIn.previousTransactionId))
-            # c.message(str(transactionObj3.valueIn.voutIndex))
-            # c.message(str(transactionObj4.valueIn.previousTransactionId))
-            # c.message(str(transactionObj4.valueIn.voutIndex))
-            # c.message(str(transactionObj5.valueIn.previousTransactionId))
-            # c.message(str(transactionObj5.valueIn.voutIndex))
-            # c.message(str(transactionObj6.valueIn.previousTransactionId))
-            # c.message(str(transactionObj6.valueIn.voutIndex))
-            # c.message(str(transactionObj7.valueIn.previousTransactionId))
-            # c.message(str(transactionObj7.valueIn.voutIndex))
-            # c.message(str(transactionObj8.valueIn.previousTransactionId))
-            # c.message(str(transactionObj8.valueIn.voutIndex))
-            # c.message(str(privatekey1))
-            # c.message(str(publickey2))
-            # c.message(str(privatekey2))
-            # c.message(str(veri))
-        # a = int.from_bytes(self.value,byteorder='big')
-        # b = pow(a,2)
-        # thisList.append(b)
-        # x += 1
-        # if(b>broadcastValue):
-        #     broadcastValue = b
-
-        # if x == 2:
-        #     for c in self.factory.clients:
-        #             c.message(str(broadcastValue))
-        #             c.message(str(thisList))            
-        
-
-        # for c in self.factory.clients:
-            # if c == self:
-                # c.message(str(self.value))
-                # c.message(pow(2,self.value))
-                # c.message(str(pow(int.from_bytes(self.value,byteorder='little'),1000000)))
-                # a = int.from_bytes(self.value,byteorder='big')
-                # b = pow(a,1000000)
-                # b = a*10000000000
-                # c.message(str(b))
-                # c.message(hashlib.sha256(str(transactionObj1).encode()).hexdigest())    
-
-        
+                                c.message("Double Spending detected in transaction : "+str(it+1)+" with transaction  : "+str(duplicateTransaction))        
 
     def message(self, message):
         self.transport.write(message.encode() + b'\n')
@@ -264,12 +215,9 @@ class POSSystem(basic.LineReceiver):
 from twisted.internet import protocol
 from twisted.application import service, internet
 from Crypto.Hash import SHA256
-
-
 factory = protocol.ServerFactory()
 factory.protocol = POSSystem
 factory.clients = []
-
 application = service.Application("possystem")
 internet.TCPServer(1025, factory).setServiceParent(application)
 
