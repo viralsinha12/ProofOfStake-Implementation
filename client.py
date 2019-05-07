@@ -1,6 +1,5 @@
-"""The most basic chat protocol possible.
-
-run me with twistd -y chatserver.py, and then connect with multiple
+"""
+run me with twistd -y client.py, and then connect with multiple
 telnet clients to port 1025
 """
 
@@ -41,18 +40,15 @@ class ValueOut:
         self.amount = amount
         self.outIndex = outIndex
 
-# class Block:
-#     #block creation time
-#     timeStamp
-#     numberOfTransactions
-#     #how many people have confirmed this block - ?!?!
-#     confirmations
-#     previousBlockHash
-#     blockModifier
-#     listOfTransactions
-#     nonce
-#     merkleRootHash
-#     difficulty
+class Block:
+    def __init__(self,timeStamp,numberOfTransactions,confirmations,previousBlockHash,listOfTransactions,nonce):
+        self.timeStamp = timeStamp
+        self.numberOfTransactions = numberOfTransactions
+        #how many people have confirmed this block - ?!?!
+        self.confirmations = confirmations
+        self.previousBlockHash = previousBlockHash
+        self.listOfTransactions = listOfTransactions
+        self.nonce = nonce
 
 # class kernel:
 #     #current timestamp when the coin is being staked
@@ -69,9 +65,12 @@ import hashlib
 global x
 x = 0
 
+thisdict =  {}
 blockChain = []
 unresolvedTransactions = []
 transactionList = []
+thisList = []
+
 global broadcastValue
 broadcastValue = 0
 from Crypto.PublicKey import RSA
@@ -171,7 +170,7 @@ transactionList.append(transactionObj8)
 
 class POSSystem(basic.LineReceiver):
 
-    def __init(self,value):
+    def __init(self,value,name):
         self.value = value
 
     def connectionMade(self):
@@ -185,9 +184,9 @@ class POSSystem(basic.LineReceiver):
         global broadcastValue
         self.value = line
 
-        for c in self.factory.clients:
-            if c!=self:
-                if(line==b'broadcast'):
+        if(line==b'broadcast'):
+            for c in self.factory.clients:
+                if c!=self:
                     for it in range(0,8):
                         if(it==0):
                             unresolvedTransactions.append(transactionList[it])
@@ -206,7 +205,30 @@ class POSSystem(basic.LineReceiver):
                                 temp = it + 1
                                 c.message("Transaction "+str(temp)+" validated and added to unresolved transactions pool")
                             else:
-                                c.message("Double Spending detected in transaction : "+str(it+1)+" with transaction  : "+str(duplicateTransaction))        
+                                c.message("Double Spending detected in transaction : "+str(it+1)+" with transaction  : "+str(duplicateTransaction))
+        else:
+            a = int.from_bytes(self.value, byteorder='big')
+            x = x+1;
+            thisList.append(a%48)
+
+            if(x==2):
+                now = datetime.datetime.now()
+                listOftransaction = [transactionObj1,transactionObj2,transactionObj3]
+                BlockObj1 = Block(now,3,0,"",listOftransaction,45643)
+                transactionObj1.blockTimeStamp=now
+                transactionObj2.blockTimeStamp=now
+                transactionObj3.blockTimeStamp=now
+                blockChain.append(BlockObj1)
+                now = datetime.datetime.now()
+                listOftransaction = [transactionObj4,transactionObj5]
+                BlockObj2 = Block(now,2,0,hash(BlockObj1),listOftransaction,95643)
+                transactionObj4.blockTimeStamp=now
+                transactionObj5.blockTimeStamp=now
+                blockChain.append(BlockObj2)
+                for c in self.factory.clients:
+                    c.message("\n Block created by node with stake "+str(max(thisList)))
+                    c.message(str(blockChain))
+
 
     def message(self, message):
         self.transport.write(message.encode() + b'\n')
@@ -220,10 +242,3 @@ factory.protocol = POSSystem
 factory.clients = []
 application = service.Application("possystem")
 internet.TCPServer(1025, factory).setServiceParent(application)
-
-
-
-###what to do [steps]###
-#Transaction object creation (create n objects for n transactions)
-# Block creation by nodes --> hash target implementation - staking hardcoding at this time -- validator will be selected (only 1 validator)
-#Block added to blockchain - hashing link (hre implementation - staking hardcoding at this time -- validator will be selected (only 1 validator at a time)
